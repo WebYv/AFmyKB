@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1724">
+  <meta name="description" content="Особиста база риб: карти, локації, наживки та умови ловлі.">
+  <title>FishBase — база риб</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="FishBase — на головну">
+      <span class="brand-mark">🐟</span>
+      <span><strong>FishBase</strong><small>База риболовних знань</small></span>
+    </a>
+    <div class="top-actions">
+      <button id="exportJsonTop" class="button button-quiet" type="button">Експорт JSON</button>
+      <button id="addFishTop" class="button button-primary" type="button">＋ Додати рибу</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">ТВОЯ РИБОЛОВНА ЕНЦИКЛОПЕДІЯ</p>
+        <h1>Знайди свою наступну рибу.</h1>
+        <p class="intro-copy">Зберігай перевірені місця, наживки й умови ловлі. Фільтруй записи за картою, локацією та снастю.</p>
+      </div>
+      <div class="intro-icon" aria-hidden="true">🎣</div>
+    </section>
+
+    <section class="stats" aria-label="Статистика бази">
+      <article class="stat-card"><span class="stat-icon">🐠</span><div><span class="stat-label">Записів у базі</span><strong id="totalCount">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">🗺️</span><div><span class="stat-label">Карт</span><strong id="mapCount">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">📍</span><div><span class="stat-label">Локацій</span><strong id="locationCount">0</strong></div></article>
+    </section>
+
+    <section class="panel filter-panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">ШВИДКИЙ ПОШУК</p><h2>Знайти запис</h2></div>
+        <button id="resetFilters" class="text-button" type="button">Скинути фільтри</button>
+      </div>
+      <div class="filters">
+        <label class="field search-field"><span>Пошук за назвою або приміткою</span><input id="searchInput" type="search" placeholder="Наприклад, короп, бойли…"></label>
+        <label class="field"><span>Карта</span><select id="filterMap"><option value="">Усі карти</option></select></label>
+        <label class="field"><span>Локація</span><select id="filterLocation" disabled><option value="">Усі локації</option></select></label>
+        <label class="field"><span>Наживка</span><select id="filterBait"><option value="">Усі наживки</option></select></label>
+        <label class="field"><span>Час</span><select id="filterTime"><option value="">Будь-який час</option></select></label>
+        <label class="field"><span>Тип снасті</span><select id="filterTackle"><option value="">Усі снасті</option></select></label>
+      </div>
+      <div class="filter-footer"><span id="resultCount">Показано 0 записів</span><span class="hint">Фільтри можна комбінувати</span></div>
+    </section>
+
+    <section class="records-section">
+      <div class="section-heading records-heading">
+        <div><p class="eyebrow">ТВОЯ КОЛЕКЦІЯ</p><h2>Записи про риб</h2></div>
+        <div class="view-actions">
+          <label class="button button-quiet import-label" for="importFile">Імпорт файлу</label>
+          <input id="importFile" type="file" accept=".json,.csv,application/json,text/csv" hidden>
+          <button id="exportCsv" class="button button-quiet" type="button">Експорт CSV</button>
+          <button id="addFish" class="button button-primary" type="button">＋ Додати запис</button>
+        </div>
+      </div>
+      <div id="records" class="records-grid" aria-live="polite"></div>
+      <div id="emptyState" class="empty-state" hidden>
+        <div class="empty-illustration">🪝</div>
+        <h3 id="emptyTitle">Поки що записів немає</h3>
+        <p id="emptyCopy">Додай першу рибу або імпортуй готовий JSON чи CSV-файл.</p>
+        <button id="emptyAdd" class="button button-primary" type="button">＋ Додати перший запис</button>
+      </div>
+    </section>
+
+    <section class="sharing-note">
+      <span class="note-icon">👥</span>
+      <div><strong>Працює для спільного ведення через обмін файлами</strong><p>Записи зберігаються у браузері цього пристрою. Щоб поділитися базою з іншими гравцями, експортуй JSON і надішли їм файл. Вони імпортують його у себе. Для об'єднання змін експортуйте актуальну спільну версію й передавайте її всім учасникам. Автоматичної синхронізації між людьми немає.</p></div>
+    </section>
+    <footer class="footer"><span>FishBase · безкоштовний статичний сайт</span><span>Дані залишаються у твоєму браузері, доки ти сам їх не експортуєш.</span></footer>
+  </main>
+
+  <dialog id="fishDialog" class="fish-dialog">
+    <form id="fishForm" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow" id="formEyebrow">НОВИЙ ЗАПИС</p><h2 id="dialogTitle">Додати рибу</h2></div><button type="button" id="closeDialog" class="close-button" aria-label="Закрити">×</button></div>
+      <input id="recordId" type="hidden">
+      <div class="form-grid">
+        <label class="field span-2"><span>Назва риби <b>*</b></span><input id="fishName" required maxlength="100" placeholder="Наприклад, Короп"></label>
+        <label class="field"><span>Карта <b>*</b></span><input id="fishMap" list="mapOptions" required maxlength="100" placeholder="Обери або введи карту" autocomplete="off"><datalist id="mapOptions"></datalist></label>
+        <label class="field"><span>Локація <b>*</b></span><input id="fishLocation" list="locationOptions" required maxlength="120" placeholder="Спочатку обери карту" autocomplete="off"><datalist id="locationOptions"></datalist><small class="field-help">Підказки показують локації обраної карти.</small></label>
+        <label class="field"><span>Наживка</span><input id="fishBait" list="baitOptions" maxlength="160" placeholder="Наприклад, кукурудза"><datalist id="baitOptions"></datalist></label>
+        <label class="field"><span>Час</span><select id="fishTime"><option value="">Не вказано</option><option>День</option><option>Ніч</option><option>День і ніч</option><option>Світанок</option><option>Захід сонця</option><option>Тільки вдень</option><option>Тільки вночі</option><option>Вдень краще</option><option>Вночі краще</option></select></label>
+        <label class="field"><span>Тип снасті</span><input id="fishTackle" list="tackleOptions" maxlength="100" placeholder="Наприклад, фідер"><datalist id="tackleOptions"></datalist></label>
+        <label class="field"><span>Глибина</span><input id="fishDepth" maxlength="60" placeholder="Наприклад, 2,5 м або 3–4 м"></label>
+        <label class="field span-2"><span>Примітка</span><textarea id="fishNotes" rows="3" maxlength="1500" placeholder="Координати, погода, точка закидання, додаткові умови…"></textarea></label>
+      </div>
+      <p class="dialog-hint">Порада: додавай окремий запис, якщо для цієї риби інша локація, наживка або глибина.</p>
+      <div class="dialog-actions"><button type="button" id="cancelDialog" class="button button-quiet">Скасувати</button><button type="submit" class="button button-primary">Зберегти запис</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
